@@ -1,4 +1,4 @@
-v# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import os
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
@@ -36,14 +36,22 @@ class LLMGenerator:
     # -----------------------------
     # Generate Answer
     # -----------------------------
-    def generate_answer(self, query, retrieved_docs):
+    def generate_answer(self, query, retrieved_docs, temperature: float = 0.2):
         """
         Generate a response using Gemini with the query and retrieved document context.
         """
         context = self.prepare_context(retrieved_docs)
+
         prompt = f"""
-You are a helpful AI assistant answering questions based on MeTTa documentation.
-Use ONLY the provided context to answer clearly and concisely.
+You are an expert AI assistant specialized in MeTTa programming language documentation.
+
+Your task:
+- Carefully read the provided context (retrieved from MeTTa documentation).
+- Answer the given user question in a clear, structured, and detailed manner.
+- Always ground your response only on the provided context.
+- If the context includes code examples, include them properly formatted.
+- Avoid generic or vague explanations.
+- Use headings or bullet points where helpful.
 
 Context:
 {context}
@@ -51,13 +59,15 @@ Context:
 Question:
 {query}
 
-Answer:
+Now write a detailed, step-by-step explanation.
 """
 
         try:
             response = self.client.models.generate_content(
                 model=self.model_name,
-                contents=prompt
+                contents=prompt,
+                # If your client supports generation parameters you can add them here.
+                # e.g., temperature=temperature
             )
             answer = response.text.strip()
         except Exception as e:

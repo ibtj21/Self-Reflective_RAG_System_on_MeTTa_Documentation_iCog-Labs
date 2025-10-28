@@ -39,19 +39,36 @@ class CritiqueModule:
             return "Error"
 
     # -------------------------------------------------
+    # Utility: Interpret Gemini’s critique as Boolean
+    # -------------------------------------------------
+    def _interpret_response(self, response: str):
+        """
+        Interprets Gemini's textual response (YES/NO) as a Boolean and extracts feedback.
+        """
+        response = response.strip()
+        lower = response.lower()
+        if "yes" in lower:
+            return True, response
+        elif "no" in lower:
+            return False, response
+        else:
+            # if uncertain, treat as failure
+            return False, f"Unclear response from model: {response}"
+
+    # -------------------------------------------------
     # 1️⃣ Check: Retrieved Documents Relevance
     # -------------------------------------------------
-    def check_docs_relevance(self, query: str, docs: list) -> str:
+    def check_retrieval_relevance(self, query: str, docs: list):
         """
         Check if the retrieved documents are relevant to the query.
-        Returns 'YES' or 'NO' with justification.
+        Returns (bool, feedback).
         """
         context = "\n\n".join([doc.page_content for doc in docs])
         prompt = f"""
 You are a critique model that evaluates the first stage of a Retrieval-Augmented Generation (RAG) pipeline.
 
 TASK:
-Determine whether the following retrieved documents are relevant for answering the given query.
+Determine whether the following retrieved documents contain information that is  relevant and helpful for answering the user's query.
 
 Query:
 {query}
@@ -61,23 +78,23 @@ Retrieved Documents (first 3000 characters):
 
 Respond with 'YES' or 'NO' followed by a short justification.
         """
-        return self._ask_gemini(prompt)
+        response = self._ask_gemini(prompt)
+        return self._interpret_response(response)
 
     # -------------------------------------------------
     # 2️⃣ Check: Generation Supported by Retrieved Docs
     # -------------------------------------------------
-    def check_generation_supported(self, answer: str, docs: list) -> str:
+    def check_generation_support(self, answer: str, docs: list):
         """
-        Check whether the generated answer is directly supported
-        by the retrieved documents.
-        Returns 'YES' or 'NO' with justification.
+        Check whether the generated answer is directly supported by the retrieved documents.
+        Returns (bool, feedback).
         """
         context = "\n\n".join([doc.page_content for doc in docs])
         prompt = f"""
 You are a critique model checking factual consistency in a RAG system.
 
 TASK:
-Determine if the generated answer is supported by the retrieved documents.
+Determine if the generated answer relies on and aligns with the evidence present in the retrieved documents.
 
 Generated Answer:
 {answer}
@@ -87,15 +104,16 @@ Retrieved Documents (first 3000 characters):
 
 Respond with 'YES' or 'NO' followed by a brief justification.
         """
-        return self._ask_gemini(prompt)
+        response = self._ask_gemini(prompt)
+        return self._interpret_response(response)
 
     # -------------------------------------------------
     # 3️⃣ Check: Generation Usefulness for Query
     # -------------------------------------------------
-    def check_usefulness(self, query: str, answer: str) -> str:
+    def check_generation_usefulness(self, query: str, answer: str):
         """
         Evaluate if the generated answer is useful and relevant to the query.
-        Returns 'YES' or 'NO' with justification.
+        Returns (bool, feedback).
         """
         prompt = f"""
 You are a critique model assessing the usefulness of a generated answer
@@ -108,7 +126,33 @@ Generated Answer:
 {answer}
 
 TASK:
-Determine whether this answer is clear, correct, and directly useful for the query.
+Determine whether this answer is clear, complete, and useful for the user’s original query.
 Respond with 'YES' or 'NO' followed by a concise justification.
         """
-        return self._ask_gemini(prompt)
+        response = self._ask_gemini(prompt)
+        return self._interpret_response(response)
+
+    # -------------------------------------------------
+    # 🔄 Query Rephrasing (for self-reflection)
+    # -------------------------------------------------
+    def rephrase_query(self, query: str, feedback: str):
+        """
+        Ask Gemini to rephrase the query based on critique feedback.
+        Used when relevance or usefulness checks fail.
+        """
+        prompt = f"""
+You are a query rephraser for a RAG system.
+
+Original Query:
+{query}
+
+Critique Feedback:
+{feedback}
+
+TASK:
+Rephrase the query to make it clearer, more specific, and better aligned with the retrieval process.
+Only return the improved query text.
+        """
+        new_query = self._ask_gemini(prompt)
+        print(f"🔁 Rephrased Query: {new_query}")
+        return new_query
