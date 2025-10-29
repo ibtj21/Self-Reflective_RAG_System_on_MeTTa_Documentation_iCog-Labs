@@ -76,7 +76,7 @@ if __name__ == "__main__":
     rag_system = SelfReflectiveRAG(max_retries=2, k=3)
     rag_system.retriever.load_vectorstore()
 
-    user_query = "Explain how pattern matching works in MeTTa with examples."
+    user_query = "How do I define a function in MeTTa?"
 
 
     rag_system.process_query(user_query)
