@@ -7,21 +7,21 @@ import json
 # Page Configuration
 # -----------------------------
 st.set_page_config(
-    page_title="Self-Reflective RAG on MeTTa Docs",
-    page_icon="🧠",
+    page_title="🧠 Self-Reflective RAG System",
+    page_icon="📘",
     layout="wide"
 )
 
 # -----------------------------
 # Header
 # -----------------------------
-st.title("🧠 Self-Reflective RAG System")
-st.subheader("Built on MeTTa Documentation using Gemini + FAISS")
+st.title("🧠 Self-Reflective RAG System on MeTTa Docs")
+st.subheader("Gemini + FAISS + Self-Reflection + Critique")
 
 st.markdown("""
-This system retrieves relevant sections from the MeTTa documentation,
-generates an answer using **Gemini**, and then critiques its own reasoning
-to ensure clarity, factual consistency, and usefulness.
+This system answers MeTTa programming questions using **Gemini** with a
+**self-reflective Retrieval-Augmented Generation (RAG)** process.  
+It also critiques itself and improves its response before finalizing.
 """)
 
 # -----------------------------
@@ -38,26 +38,28 @@ submit = st.button("🚀 Generate Answer")
 # -----------------------------
 # Backend URL
 # -----------------------------
-API_URL = "http://127.0.0.1:5000/query"  # Flask must be running!
+API_URL = "http://127.0.0.1:5000/query"
 
 # -----------------------------
-# Response Section
+# Response Handling
 # -----------------------------
 if submit and query.strip():
-    with st.spinner("Processing your query with the Self-Reflective RAG pipeline... ⏳"):
+    with st.spinner("Processing your question through the reflective pipeline... ⏳"):
         try:
             response = requests.post(API_URL, json={"query": query})
             if response.status_code == 200:
                 result = response.json()
 
-                st.success("✅ Answer Generated Successfully!")
+                st.success("✅ Final Answer Generated!")
                 st.markdown(f"### **Question:** {result.get('query', '')}")
                 st.markdown(f"### **Answer:**\n\n{result.get('answer', '')}")
 
-                # Display more info if available (like reflections or retries)
-                if "reflection_steps" in result:
-                    with st.expander("🪞 Reflection Details"):
-                        st.json(result["reflection_steps"], expanded=False)
+                # Reasoning Trace
+                if "trace" in result:
+                    with st.expander("🧩 Show Full Reasoning Trace"):
+                        st.json(result["trace"], expanded=False)
+                else:
+                    st.info("ℹ️ No reasoning trace available.")
             else:
                 st.error(f"❌ Server returned status {response.status_code}")
         except Exception as e:
