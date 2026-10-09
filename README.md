@@ -1,18 +1,18 @@
-# 🧠 Self-Reflective RAG System on MeTTa Documentation
+# Self-Reflective RAG System on MeTTa Documentation
 
-## 📘 Overview
+## Overview
 This project implements a **Self-Reflective Retrieval-Augmented Generation (RAG)** system built on **MeTTa standard library documentation**.  
 It integrates **retrieval**, **LLM-based generation**, and a **self-critique module** that reflects on its own answers to iteratively improve response quality.
 
 The system uses:
 - **FAISS** for efficient document retrieval  
-- **Gemini (Google’s LLM)** for answer generation  
+- **Gemini (Google's LLM)** for answer generation  
 - **Custom Critique Module** for self-evaluation  
 - **Flask + Streamlit** for a minimal, interactive user interface
 
 ---
 
-## 🎯 Objective
+## Objective
 To design and implement a **modular RAG backend** that not only retrieves and generates answers but also **self-evaluates** them across three dimensions:
 
 1. **Retrieved Documents Relevance**  
@@ -21,7 +21,8 @@ To design and implement a **modular RAG backend** that not only retrieves and ge
 
 ---
 
-## 🧩 System Architecture
+## System Architecture
+```
               ┌──────────────────────┐
               │      User Query      │
               └──────────┬───────────┘
@@ -53,10 +54,11 @@ To design and implement a **modular RAG backend** that not only retrieves and ge
               ┌──────────────────────┐
               │   Final Answer       │
               └──────────────────────┘
+```
 
 ---
 
-## ⚙️ Components
+## Components
 
 ### 1. **Document Retrieval Engine** (`Document_retrieval.py`)
 - Loads **MeTTa documentation PDFs**
@@ -65,7 +67,7 @@ To design and implement a **modular RAG backend** that not only retrieves and ge
 - Stores and retrieves document vectors using **FAISS**
 
 ### 2. **LLM-Based Generation** (`LLM_based_generation.py`)
-- Uses **Gemini** (`gemini-2.5-flash`) via Google’s GenAI API  
+- Uses **Gemini** (`gemini-2.5-flash`) via Google's GenAI API  
 - Generates structured answers grounded in retrieved documentation  
 - Ensures responses are **context-aware**, **detailed**, and **code-inclusive**
 
@@ -92,7 +94,7 @@ To design and implement a **modular RAG backend** that not only retrieves and ge
 
 ---
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### 1. Clone the repository
 ```bash
@@ -131,12 +133,8 @@ http://localhost:8501
 
 ### Key Features
 
-✅ Modular design for easy component replacement
-✅ Automated self-critique and query rephrasing
-✅ Supports any open LLM (currently Gemini)
-✅ Reasoning trace for transparency
-✅ Minimal Streamlit UI for demo purposes
-
-
-
-
+- Modular design for easy component replacement
+- Automated self-critique and query rephrasing
+- Supports any open LLM (currently Gemini)
+- Reasoning trace for transparency
+- Minimal Streamlit UI for demo purposes
